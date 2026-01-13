@@ -13,7 +13,7 @@ client = OpenAI(
     base_url=config["deepseek_base_url"]
 )
 
-MCP_BASE = os.getenv("MCP_BASE", "http://127.0.0.1:4096")
+MCP_BASE = os.getenv("MCP_BASE", "http://127.0.0.1:4567")
 
 
 def call_mcp_tool(tool_name: str, params: dict = None):

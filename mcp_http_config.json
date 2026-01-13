@@ -1,8 +1,8 @@
 {
   "mcpServers": {
     "arbitrage-suite": {
-      "type": "http",
-      "url": "http://127.0.0.1:4096",
+      "type": "sse",
+      "url": "http://127.0.0.1:4567/sse",
       "description": "QDII溢价套利和微信通知服务",
       "tools": [
         {
@@ -36,10 +36,11 @@
     }
   },
   "client": {
-    "timeout": 10,
+    "timeout": 30,
     "retry": 3,
     "headers": {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Accept": "text/event-stream"
     }
   }
 }
