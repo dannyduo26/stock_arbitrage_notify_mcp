@@ -1,0 +1,45 @@
+{
+  "mcpServers": {
+    "arbitrage-suite": {
+      "type": "http",
+      "url": "http://127.0.0.1:4096",
+      "description": "QDII溢价套利和微信通知服务",
+      "tools": [
+        {
+          "name": "fetch_qdii_candidates",
+          "description": "获取QDII溢价套利候选列表",
+          "parameters": {
+            "threshold": {
+              "type": "number",
+              "description": "溢价率阈值，默认为2.0%",
+              "default": 2.0
+            }
+          }
+        },
+        {
+          "name": "send_wechat",
+          "description": "发送微信通知",
+          "parameters": {
+            "title": {
+              "type": "string",
+              "description": "通知的标题",
+              "required": true
+            },
+            "desp": {
+              "type": "string",
+              "description": "通知的详细内容",
+              "required": true
+            }
+          }
+        }
+      ]
+    }
+  },
+  "client": {
+    "timeout": 10,
+    "retry": 3,
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}

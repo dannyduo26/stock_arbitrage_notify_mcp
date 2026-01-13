@@ -10,7 +10,7 @@ import httpx
 import jisilu_mcp_server as j
 import wechat_server as w
 
-mcp = FastMCP("arbitrage-suite", json_response=True)
+mcp = FastMCP("arbitrage-suite", json_response=True, port=4096)
 
 @mcp.tool(description="获取QDII溢价套利候选列表")
 def fetch_qdii_candidates(threshold: float = 2.0) -> List[Dict[str, Any]]:
@@ -23,7 +23,7 @@ def fetch_qdii_candidates(threshold: float = 2.0) -> List[Dict[str, Any]]:
     return j.qdii_candidates(threshold)
 
 @mcp.tool(description="发送微信通知")
-async def send_wechat(title: str, desp: str) -> dict[str, Any]:
+def send_wechat(title: str, desp: str) -> dict[str, Any]:
     """
     发送微信通知
 
@@ -31,9 +31,9 @@ async def send_wechat(title: str, desp: str) -> dict[str, Any]:
         title: 通知的标题
         desp: 通知的详细内容
     """
-    return await w.send_wechat(title, desp)
+    return w.send_wechat(title, desp)
 
 if __name__ == "__main__":
     import sys
     print(f"Starting MCP server with args: {sys.argv}", file=sys.stderr)
-    mcp.run(transport="sse")
+    mcp.run(transport="http")  # 使用HTTP传输方式
