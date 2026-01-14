@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  mcp-server:
+    build: .
+    container_name: mcp-arbitrage-server
+    ports:
+      - "4567:4567"
+    environment:
+      - PORT=4567
+      # 可以通过环境变量覆盖 config.json 中的配置
+      # - SCT_KEY=your_sct_key_here
+    volumes:
+      # 如果需要在运行时更新配置，可以挂载 config.json
+      - ./config.json:/app/config.json:ro
+    restart: unless-stopped
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge

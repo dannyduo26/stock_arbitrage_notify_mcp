@@ -1,0 +1,30 @@
+# Python 缓存文件
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# 虚拟环境
+venv/
+env/
+ENV/
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# 测试文件
+test_*.py
+*_demo.py
+
+# 文档
+README.md
+MCP_SERVER_USAGE.md
+extensions.txt
+
+# 其他配置
+mcp_http_config.json
+mcp_client.py
+deepseek_client.py
