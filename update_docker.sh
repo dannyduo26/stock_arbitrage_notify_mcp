@@ -43,27 +43,15 @@ sudo docker-compose down
 echo -e "${GREEN}✓ 容器已停止${NC}"
 echo ""
 
-# 4. 清理旧镜像（可选）
-read -p "是否清理旧的未使用镜像？(y/n) " -n 1 -r
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}[4/7] 清理旧镜像...${NC}"
-    sudo docker image prune -f
-    echo -e "${GREEN}✓ 旧镜像已清理${NC}"
-else
-    echo -e "${YELLOW}[4/7] 跳过清理旧镜像${NC}"
-fi
+# 4. 清理旧镜像
+echo -e "${YELLOW}[4/7] 清理旧镜像...${NC}"
+sudo docker image prune -f
+echo -e "${GREEN}✓ 旧镜像已清理${NC}"
 echo ""
 
 # 5. 重新构建镜像
-echo -e "${YELLOW}[5/7] 重新构建镜像...${NC}"
-read -p "是否使用 --no-cache 强制重建？(y/n) " -n 1 -r
-echo ""
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    sudo docker-compose build --no-cache
-else
-    sudo docker-compose build
-fi
+echo -e "${YELLOW}[5/7] 重新构建镜像 (强制重建)...${NC}"
+sudo docker-compose build --no-cache
 echo -e "${GREEN}✓ 镜像构建完成${NC}"
 echo ""
 
