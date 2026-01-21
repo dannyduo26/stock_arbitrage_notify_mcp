@@ -7,3 +7,4 @@ fastmcp
 pandas>=2.0.0
 matplotlib>=3.7.0
 pillow>=10.0.0
+openai>=1.0.0
