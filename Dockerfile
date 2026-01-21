@@ -16,10 +16,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
-COPY mcp_server.py .
-COPY logging_config.py .
 COPY config.json .
-COPY modules/ modules/
+COPY config/ config/
+COPY server/ server/
 
 # 暴露端口（默认 4567）
 EXPOSE 4567
@@ -33,4 +32,4 @@ ENV PYTHONUNBUFFERED=1
 ENV ENV=prod
 
 # 运行 MCP 服务器
-CMD ["python", "mcp_server.py"]
+CMD ["python", "server/mcp_server.py"]

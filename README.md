@@ -54,16 +54,18 @@ pip install -r requirements.txt
 
 ```bash
 # 生产环境启动（启用文件日志）
-ENV=prod python mcp_server.py
+ENV=prod python server/mcp_server.py
 
 # 开发环境启动（仅控制台日志）
-ENV=dev python mcp_server.py
+ENV=dev python server/mcp_server.py
 ```
 
 ### 启动 MCP 服务器
 
 ```bash
-python mcp_server.py
+python server/mcp_server.py
+# 或者从项目根目录
+python .\server\mcp_server.py
 ```
 
 服务器将在 `http://127.0.0.1:4567` 启动，使用 SSE 传输方式。
@@ -131,24 +133,33 @@ send_wechat(
 
 ```
 mcp/
-├── README.md                    # 项目说明文档
-├── DOCKER.md                    # Docker 部署文档
-├── LOGGING.md                   # 日志配置文档
-├── requirements.txt             # Python 依赖列表
-├── config.json                  # 配置文件（需自行创建）
-├── Dockerfile                   # Docker 镜像构建文件
-├── docker-compose.yml           # Docker Compose 配置
-├── .dockerignore                # Docker 构建排除文件
-├── deploy.sh                    # 自动部署脚本
-├── mcp_server.py                # MCP 服务器主程序（SSE 传输）
-├── mcp_server_demo.py           # MCP 服务器示例
-├── logging_config.py            # 日志配置模块
-├── test_mcp_server.py           # MCP 服务器测试脚本
-├── test_mcp_server_demo.py      # 示例服务器测试脚本
-└── modules/                     # 服务器模块
-    ├── __init__.py              # Python 包初始化文件
-    ├── jisilu_mcp_server.py     # 集思录数据抓取模块（QDII + LOF）
-    └── wechat_server.py         # 微信通知模块
+├── README.md                          # 项目说明文档
+├── DOCKER.md                          # Docker 部署文档
+├── LOGGING.md                         # 日志配置文档
+├── requirements.txt                   # Python 依赖列表
+├── config.json                        # 配置文件（需自行创建）
+├── Dockerfile                         # Docker 镜像构建文件
+├── docker-compose.yml                 # Docker Compose 配置
+├── .dockerignore                      # Docker 构建排除文件
+├── deploy.sh                          # 自动部署脚本
+├── config/                            # 配置模块目录
+│   ├── __init__.py                    # Python 包初始化文件
+│   └── logging_config.py              # 日志配置模块
+├── server/                            # 服务器模块目录
+│   ├── mcp_server.py                  # MCP 服务器主程序（SSE 传输）
+│   └── modules/                       # 业务逻辑模块
+│       ├── __init__.py                # Python 包初始化文件
+│       ├── jisilu_mcp_server.py       # 集思录数据抓取模块（QDII + LOF）
+│       ├── wechat_server.py           # 微信通知模块
+│       └── stock_server.py            # A股行情数据模块
+├── client/                            # 客户端脚本目录
+│   ├── __init__.py                    # Python 包初始化文件
+│   ├── notify_arbitrage_mcp_client.py # AI Agent 模式客户端
+│   └── deepseek_client.py             # DeepSeek API 客户端
+└── tests/                             # 测试脚本目录
+    ├── test_mcp_server.py             # MCP 服务器测试脚本
+    ├── test_stock_server.py           # A股行情模块测试脚本
+    └── test_deepseek.py               # DeepSeek 客户端测试脚本
 ```
 
 ## 💻 使用示例
@@ -254,22 +265,41 @@ docker-compose down
 
 ```bash
 # 确保服务器正在运行
-python mcp_server.py
+python server/mcp_server.py
 
 # 在另一个终端运行测试
-python test_mcp_server.py
+python tests/test_mcp_server.py
 ```
+
+### AI Agent 客户端示例
+
+项目提供了一个完整的 AI Agent 客户端示例，它结合了 DeepSeek 大模型和 MCP 工具调用：
+
+```bash
+# 运行 AI Agent 客户端
+python client/notify_arbitrage_mcp_client.py
+```
+
+该客户端会：
+
+1. 连接到 MCP 服务器获取可用工具
+2. 使用 DeepSeek 分析用户需求并决策调用哪些工具
+3. 自动执行工具调用并生成分析报告
+4. 通过微信发送通知
 
 ### 测试输出示例
 
 ```
 ✅ 已成功建立连接并初始化。
-[可用工具]: ['fetch_qdii_candidates', 'send_wechat']
+[可用工具]: ['fetch_qdii_candidates', 'send_wechat', 'get_stock_realtime', 'get_stock_hist']
 
-共 4 只基金:
-  1. 全球芯片LOF (501225)
-     溢价率: 3.57%
+共 7 只基金:
+  1. 国投白银LOF (161226)
+     溢价率: 50.86%
      申购状态: 限100
+  2. 黄金主题LOF (161116)
+     溢价率: 13.82%
+     申购状态: 限10
   ...
 ```
 

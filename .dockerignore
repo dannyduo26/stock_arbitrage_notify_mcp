@@ -15,16 +15,22 @@ ENV/
 .gitignore
 .gitattributes
 
-# 测试文件
+# 测试和客户端文件（生产环境不需要）
+tests/
+client/
 test_*.py
 *_demo.py
 
 # 文档
 README.md
+DOCKER.md
+LOGGING.md
 MCP_SERVER_USAGE.md
 extensions.txt
 
 # 其他配置
 mcp_http_config.json
-mcp_client.py
-deepseek_client.py
+.agent/
+
+# 部署脚本
+deploy.sh

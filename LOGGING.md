@@ -7,7 +7,7 @@
 ### 开发环境（dev）
 
 ```bash
-ENV=dev python mcp_server.py
+ENV=dev python server/mcp_server.py
 ```
 
 - ✅ 日志输出到控制台
@@ -17,7 +17,7 @@ ENV=dev python mcp_server.py
 ### 生产环境（prod）
 
 ```bash
-ENV=prod python mcp_server.py
+ENV=prod python server/mcp_server.py
 ```
 
 - ✅ 日志输出到控制台
@@ -71,7 +71,7 @@ environment:
 export ENV=dev
 
 # 启动服务器
-python mcp_server.py
+python server/mcp_server.py
 ```
 
 这样可以避免生成不必要的日志文件，保持项目目录整洁。

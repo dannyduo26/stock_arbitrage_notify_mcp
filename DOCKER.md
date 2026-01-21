@@ -73,7 +73,7 @@ docker run -d \
 
 ```bash
 # 在宿主机上运行测试
-python test_mcp_server.py
+python tests/test_mcp_server.py
 ```
 
 ## 日志管理
