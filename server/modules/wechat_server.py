@@ -20,7 +20,8 @@ mcp = FastMCP("wechat-notify", json_response=True)
 
 
 def _load_sct_key() -> str | None:
-    cfg_path = Path(__file__).parent / "config.json"
+    # 从项目根目录加载配置文件（向上两级：modules -> server -> root）
+    cfg_path = Path(__file__).parent.parent.parent / "config.json"
     if cfg_path.exists():
         try:
             data = json.loads(cfg_path.read_text(encoding="utf-8"))
@@ -42,7 +43,6 @@ def _build_api_url() -> str:
     return f"https://sctapi.ftqq.com/{key}.send"
 
 
-@mcp.tool()
 async def send_wechat(title: str, desp: str) -> dict[str, Any]:
     api_url = _build_api_url()
     async with httpx.AsyncClient() as client:

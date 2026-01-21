@@ -17,10 +17,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
 COPY mcp_server.py .
-COPY jisilu_mcp_server.py .
-COPY wechat_server.py .
 COPY logging_config.py .
 COPY config.json .
+COPY modules/ modules/
 
 # 暴露端口（默认 4567）
 EXPOSE 4567

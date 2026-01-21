@@ -4,11 +4,13 @@ import os
 
 def test_deepseek():
     print("Loading config...")
-    if not os.path.exists("config.json"):
-        print("config.json not found")
+    # 配置文件在项目根目录
+    config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config.json")
+    if not os.path.exists(config_path):
+        print(f"config.json not found at {config_path}")
         return
 
-    with open("config.json", "r") as f:
+    with open(config_path, "r") as f:
         config = json.load(f)
     
     print(f"Config loaded. Base URL: {config.get('deepseek_base_url')}")

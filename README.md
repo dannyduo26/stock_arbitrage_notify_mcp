@@ -1,13 +1,15 @@
 # MCP Arbitrage Suite
 
-基于 MCP (Model Context Protocol) 的 QDII 溢价套利和微信通知服务套件。
+基于 MCP (Model Context Protocol) 的 QDII/LOF 溢价套利和微信通知服务套件。
 
 ## 📖 项目简介
 
-本项目提供了一个基于 HTTP 传输的 MCP 服务器，集成了以下功能：
+本项目提供了一个基于 SSE 传输的 MCP 服务器，集成了以下功能：
 
-- **QDII 溢价套利**：从集思录抓取 QDII 基金数据，筛选满足溢价条件的套利机会
+- **QDII/LOF 溢价套利**：从集思录抓取 QDII 和 LOF 基金数据，筛选满足溢价条件的套利机会
 - **微信通知**：通过 Server 酱发送微信消息通知
+- **Docker 部署**：支持 Docker Compose 一键部署
+- **生产级日志**：环境变量控制的日志系统
 
 ## 🚀 快速开始
 
@@ -76,8 +78,13 @@ python mcp_server.py
 
 - `threshold` (float, optional): 溢价率阈值，默认为 2.0%
 
+**数据来源：**
+
+- QDII 基金数据（集思录 QDII API）
+- LOF 基金数据（集思录 LOF API）
+
 **返回：**
-返回满足以下条件的 QDII 基金列表：
+返回满足以下条件的基金列表：
 
 - T-1 溢价率 > threshold
 - 申购状态不是"暂停申购"或"开放申购"（通常是"限额申购"）
@@ -125,15 +132,23 @@ send_wechat(
 ```
 mcp/
 ├── README.md                    # 项目说明文档
-├── requirements.txt             # Python依赖列表
+├── DOCKER.md                    # Docker 部署文档
+├── LOGGING.md                   # 日志配置文档
+├── requirements.txt             # Python 依赖列表
 ├── config.json                  # 配置文件（需自行创建）
-├── mcp_http_config.json         # MCP客户端HTTP配置示例
-├── mcp_server.py                # MCP服务器主程序（HTTP传输）
-├── jisilu_mcp_server.py         # 集思录数据抓取模块
-├── wechat_server.py             # 微信通知模块
-├── mcp_client.py                # MCP客户端示例
-├── deepseek_client.py           # DeepSeek AI客户端
-└── test_deepseek.py             # 测试脚本
+├── Dockerfile                   # Docker 镜像构建文件
+├── docker-compose.yml           # Docker Compose 配置
+├── .dockerignore                # Docker 构建排除文件
+├── deploy.sh                    # 自动部署脚本
+├── mcp_server.py                # MCP 服务器主程序（SSE 传输）
+├── mcp_server_demo.py           # MCP 服务器示例
+├── logging_config.py            # 日志配置模块
+├── test_mcp_server.py           # MCP 服务器测试脚本
+├── test_mcp_server_demo.py      # 示例服务器测试脚本
+└── modules/                     # 服务器模块
+    ├── __init__.py              # Python 包初始化文件
+    ├── jisilu_mcp_server.py     # 集思录数据抓取模块（QDII + LOF）
+    └── wechat_server.py         # 微信通知模块
 ```
 
 ## 💻 使用示例
@@ -182,38 +197,91 @@ print(result)
 
 ## 🔍 数据来源
 
-QDII 数据从以下来源抓取（按优先级）：
+基金数据从以下来源抓取（按优先级）：
 
-1. 集思录 API 接口（优先）
-2. AKShare 数据接口（备用）
+### QDII 和 LOF 数据
+
+1. **集思录 QDII API**：`https://www.jisilu.cn/data/qdii/qdii_list/`
+2. **集思录 LOF API**：`https://www.jisilu.cn/data/lof/index_lof_list/`
+3. **AKShare 数据接口**（备用）：当 API 失败时自动切换
 
 ## ⚙️ 技术栈
 
-- **MCP 框架**: FastMCP - 快速构建 MCP 服务器
+- **MCP 框架**: FastMCP 2.14+ - 快速构建 MCP 服务器
+- **传输协议**: SSE (Server-Sent Events)
 - **HTTP 客户端**: httpx - 异步 HTTP 请求
 - **数据解析**: BeautifulSoup4 + lxml
-- **金融数据**: AKShare
-- **AI 集成**: OpenAI SDK（兼容 DeepSeek）
+- **金融数据**: AKShare（集思录 API + AKShare 备用）
+- **容器化**: Docker + Docker Compose
+- **Web 服务器**: Uvicorn（FastMCP 内置）
 
 ## 📝 依赖说明
 
 ```txt
-httpx>=0.28.1           # HTTP客户端
-beautifulsoup4>=4.14.2  # HTML解析
-lxml>=6.0.2             # XML/HTML处理
+httpx>=0.28.1           # HTTP 客户端
+beautifulsoup4>=4.14.2  # HTML 解析
+lxml>=6.0.2             # XML/HTML 处理
 akshare>=1.17.87        # 金融数据接口
-mcp>=1.21.2             # MCP协议框架
+mcp>=1.21.2             # MCP 协议框架
+fastmcp                 # FastMCP 服务器框架
+```
+
+## 🐳 Docker 部署
+
+### 快速开始
+
+```bash
+# 使用 Docker Compose（推荐）
+docker-compose up -d
+
+# 查看日志
+docker-compose logs -f
+
+# 停止服务
+docker-compose down
+```
+
+详细部署说明请查看 [DOCKER.md](DOCKER.md)
+
+### 端口配置
+
+- **服务端口**: 4567（可通过环境变量 `PORT` 修改）
+- **SSE 端点**: `http://localhost:4567/sse`
+
+## 🔬 测试
+
+### 运行测试脚本
+
+```bash
+# 确保服务器正在运行
+python mcp_server.py
+
+# 在另一个终端运行测试
+python test_mcp_server.py
+```
+
+### 测试输出示例
+
+```
+✅ 已成功建立连接并初始化。
+[可用工具]: ['fetch_qdii_candidates', 'send_wechat']
+
+共 4 只基金:
+  1. 全球芯片LOF (501225)
+     溢价率: 3.57%
+     申购状态: 限100
+  ...
 ```
 
 ## 🛠️ 开发说明
 
 ### MCP 传输方式
 
-本项目使用 **HTTP 传输方式**（而非 SSE）：
+本项目使用 **SSE (Server-Sent Events) 传输方式**：
 
 ```python
 # mcp_server.py
-mcp.run(transport="http")  # 使用HTTP传输方式
+mcp.run(transport="sse", host="0.0.0.0", port=4567)
 ```
 
 ### 扩展新工具
@@ -248,10 +316,31 @@ def your_tool_name(param1: str, param2: int) -> dict:
 2. **频率限制**：抓取集思录数据时请注意访问频率，避免被封 IP
 3. **Server 酱额度**：免费版 Server 酱有推送次数限制，请合理使用
 4. **网络连接**：首次运行需要下载数据，请确保网络连接稳定
+5. **反向代理**：如使用 Nginx/Apache 代理，需特殊配置 SSE 支持（参见 SSE_TROUBLESHOOTING.md）
+6. **日志文件**：生产环境（`ENV=prod`）会在 `/app/logs/` 生成日志文件
 
 ## 📚 相关文档
 
+### 项目文档
+
+- [Docker 部署指南](DOCKER.md)
+- [日志配置说明](LOGGING.md)
+- [SSE 故障排查](SSE_TROUBLESHOOTING.md)
+
+### 外部资源
+
 - [MCP 官方文档](https://modelcontextprotocol.io/)
+- [FastMCP 文档](https://gofastmcp.com)
 - [Server 酱文档](https://sct.ftqq.com/sendkey)
 - [集思录 QDII 页面](https://www.jisilu.cn/data/qdii/)
+- [集思录 LOF 页面](https://www.jisilu.cn/data/lof/)
 - [AKShare 文档](https://akshare.akfamily.xyz/)
+
+## 🌟 特性亮点
+
+- ✅ **多数据源**：同时支持 QDII 和 LOF 基金数据
+- ✅ **自动切换**：API 失败时自动切换到备用数据源
+- ✅ **生产就绪**：Docker 部署 + 环境变量配置 + 日志管理
+- ✅ **实时通知**：Server 酱微信推送
+- ✅ **易于扩展**：基于 FastMCP 框架，轻松添加新工具
+- ✅ **完整测试**：提供完整的测试脚本和示例

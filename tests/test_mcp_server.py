@@ -9,8 +9,8 @@ from mcp.client.sse import sse_client
 
 async def test_arbitrage_mcp():
     # MCP 服务器地址
-    # server_url = "http://www.dd26.icu:4567/sse"
-    server_url = "http://localhost:4567/sse"
+    server_url = "http://175.24.206.252:4567/sse"
+    # server_url = "http://localhost:4567/sse"
     
     print(f"正在连接到 MCP 服务器: {server_url}...")
     

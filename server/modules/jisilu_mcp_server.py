@@ -231,15 +231,6 @@ def qdii_candidates(threshold: float = 2.0) -> List[Dict[str, Any]]:
             })
     return out
 
-mcp = FastMCP("jisilu-qdii") if FastMCP is not None else None
-
-if mcp is not None:
-    # MCP工具：返回满足条件的QDII基金列表
-    @mcp.tool()
-    def fetch_qdii_candidates(threshold: float = 2.0) -> List[Dict[str, Any]]:
-        return qdii_candidates(threshold)
-
-
 if __name__ == "__main__":
     res = qdii_candidates(2.0)
     print(json.dumps(res, ensure_ascii=False, indent=2))
