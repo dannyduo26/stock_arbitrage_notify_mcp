@@ -252,6 +252,36 @@ docker-compose logs -f
 docker-compose down
 ```
 
+### 更新 Docker 服务
+
+**方式一：使用自动更新脚本（推荐）**
+
+```bash
+# Linux/Mac
+chmod +x update_docker.sh
+./update_docker.sh
+
+# Windows PowerShell
+.\update_docker.ps1
+```
+
+**方式二：手动更新**
+
+```bash
+# 停止并删除旧容器
+docker-compose down
+
+# 重新构建镜像
+docker-compose build --no-cache
+
+# 启动新容器
+docker-compose up -d
+```
+
+详细的更新步骤和故障排查请查看项目中的 `update_docker.sh` 或 `update_docker.ps1` 脚本。
+
+### 部署文档
+
 详细部署说明请查看 [DOCKER.md](DOCKER.md)
 
 ### 端口配置
