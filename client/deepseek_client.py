@@ -7,7 +7,9 @@ import httpx
 
 
 def _load_api_key() -> str | None:
-    cfg_path = Path(__file__).parent / "config.json"
+    # 获取项目根目录
+    ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    config_path = os.path.join(ROOT_DIR, "config.json")
     if cfg_path.exists():
         try:
             data = json.loads(cfg_path.read_text(encoding="utf-8"))

@@ -16,8 +16,17 @@ from config.logging_config import setup_logging
 logger = setup_logging()
 
 # 加载配置
-with open("config.json", "r") as f:
-    config = json.load(f)
+# 获取项目根目录
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+config_path = os.path.join(ROOT_DIR, "config.json")
+
+try:
+    with open(config_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+except FileNotFoundError:
+    logger.error(f"❌ 配置文件未找到: {config_path}")
+    logger.error("请确保从项目根目录运行脚本，或 config.json 文件存在")
+    sys.exit(1)
 
 # 使用 DeepSeek 配置
 client = OpenAI(
