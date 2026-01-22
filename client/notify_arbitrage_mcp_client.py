@@ -122,16 +122,23 @@ def ask_deepseek_with_tools(user_query: str, tools_info: str, conversation_histo
     Returns:
         包含 action（"tool_call" 或 "final_answer"）、tool_name、arguments 或 answer 的字典
     """
-    system_prompt = f"""你是一个专业的金融分析助手，能够使用提供的 MCP 工具来获取数据并进行分析。
+    system_prompt = f"""你是一个专业的金融分析助手,能够使用提供的 MCP 工具来获取数据并进行分析。
 
 {tools_info}
 
-当用户提出请求时，你需要：
-1. 分析用户需求，判断需要调用哪个工具
-2. 以 JSON 格式返回你的决策
+**重要规则:**
+1. 你必须完成用户要求的所有任务步骤,不能遗漏任何一个
+2. 如果用户要求发送通知,你必须在完成数据分析后调用 send_wechat 工具
+3. 只有在完成所有任务步骤后,才能返回 final_answer
+4. 每次只能调用一个工具,多个任务需要分多轮完成
 
-返回格式：
-- 如果需要调用工具：
+**工作流程:**
+- 第一步:分析用户需求,列出需要完成的所有任务步骤
+- 第二步:按顺序执行每个步骤,每次调用一个工具
+- 第三步:确认所有步骤都已完成后,再给出最终答案
+
+**返回格式:**
+- 如果需要调用工具:
 {{
   "action": "tool_call",
   "tool_name": "工具名称",
@@ -139,13 +146,13 @@ def ask_deepseek_with_tools(user_query: str, tools_info: str, conversation_histo
   "reason": "为什么选择这个工具和参数"
 }}
 
-- 如果已经有足够信息可以给出最终答案：
+- 如果所有任务步骤都已完成,可以给出最终答案:
 {{
   "action": "final_answer",
   "answer": "你的分析报告或回答"
 }}
 
-请只返回 JSON，不要包含其他文字。"""
+请只返回 JSON,不要包含其他文字。"""
 
     messages = [{"role": "system", "content": system_prompt}]
     
@@ -201,7 +208,12 @@ async def main():
     tools_info = format_tools_for_llm(tools)
     
     # 2) 用户查询
-    user_query = "请帮我分析一下当前有哪些QDII基金存在溢价套利机会，并发送微信通知我分析结果。"
+    user_query = """请完成以下任务:
+1. 获取当前QDII基金的溢价套利候选列表
+2. 分析这些基金的溢价情况
+3. 将分析结果通过微信通知发送给我
+
+注意:必须完成所有3个步骤,不能遗漏发送微信通知。"""
     logger.info(f"💬 用户查询: {user_query}")
     logger.info("=" * 60)
     
@@ -216,7 +228,7 @@ async def main():
         
         # 让 LLM 决定下一步行动
         decision = ask_deepseek_with_tools(
-            user_query if iteration == 1 else "继续执行任务",
+            user_query if iteration == 1 else "请根据已获得的信息,继续执行下一个未完成的任务步骤。如果所有步骤都已完成,请给出最终答案。",
             tools_info,
             conversation_history
         )
