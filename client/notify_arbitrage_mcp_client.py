@@ -155,7 +155,7 @@ def ask_deepseek_with_tools(user_query: str, tools_info: str, conversation_histo
     messages.append({"role": "user", "content": user_query})
     
     resp = client.chat.completions.create(
-        model="deepseek-chat",
+        model="deepseek-reasoner",
         messages=messages,
         max_tokens=1000,
         temperature=0.7,
