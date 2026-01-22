@@ -35,7 +35,9 @@ client = OpenAI(
 )
 
 # MCP 服务器地址
-MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://127.0.0.1:4567/sse")
+# MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://127.0.0.1:4567/sse")
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "http://175.24.206.252:4567/sse")
+
 
 
 async def get_available_tools() -> List[Dict[str, Any]]:
@@ -155,7 +157,7 @@ def ask_deepseek_with_tools(user_query: str, tools_info: str, conversation_histo
     messages.append({"role": "user", "content": user_query})
     
     resp = client.chat.completions.create(
-        model="deepseek-reasoner",
+        model="deepseek-chat",
         messages=messages,
         max_tokens=1000,
         temperature=0.7,
