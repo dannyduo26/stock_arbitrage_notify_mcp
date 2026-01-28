@@ -108,10 +108,10 @@ def get_futures_realtime(symbol: str) -> str:
         logger.warning(f"获取期货 {symbol} 实时行情失败: {result.get('error', 'unknown')}")
     return json.dumps(result, ensure_ascii=False)
 
-@mcp.tool(description="获取国内期货主力合约行情列表")
+@mcp.tool(description="获取国内期货主力合约行情列表（全部数据）")
 def get_futures_main_list() -> str:
     """
-    获取国内期货主力合约行情列表（前20条）
+    获取国内期货主力合约行情列表（全部数据）
     """
     import json
     logger.info("调用 get_futures_main_list")

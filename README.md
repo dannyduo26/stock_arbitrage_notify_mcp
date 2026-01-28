@@ -8,6 +8,8 @@
 
 - **QDII/LOF 溢价套利**：从集思录抓取 QDII 和 LOF 基金数据，筛选满足溢价条件的套利机会
 - **微信通知**：通过 Server 酱发送微信消息通知
+- **A股行情**：获取A股实时和历史行情数据
+- **期货行情**：获取国内期货实时行情和主力合约列表
 - **Docker 部署**：支持 Docker Compose 一键部署
 - **生产级日志**：环境变量控制的日志系统
 
@@ -31,8 +33,10 @@ pip install -r requirements.txt
 ```json
 {
   "deepseek_base_url": "https://api.deepseek.com",
-  "SCT_KEY": "你的Server酱Key",
-  "deepseek_api_key": "你的DeepSeek API Key"
+  "deepseek_api_key": "你的DeepSeek API Key",
+  "qwen_base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+  "qwen_api_key": "你的Qwen API Key",
+  "SCT_KEY": "你的Server酱Key"
 }
 ```
 
@@ -41,6 +45,8 @@ pip install -r requirements.txt
 - `SCT_KEY`: Server 酱的推送 Key，用于发送微信通知（在 [Server 酱官网](https://sct.ftqq.com/) 获取）
 - `deepseek_api_key`: DeepSeek API 密钥（如需使用 AI 功能）
 - `deepseek_base_url`: DeepSeek API 服务地址
+- `qwen_api_key`: 通义千问 API 密钥（可选）
+- `qwen_base_url`: 通义千问 API 服务地址（可选）
 
 ### 环境变量（可选）
 
@@ -74,7 +80,7 @@ python .\server\mcp_server.py
 
 ### 1. fetch_qdii_candidates
 
-获取 QDII 溢价套利候选列表。
+获取 QDII/LOF 溢价套利候选列表。
 
 **参数：**
 
@@ -129,6 +135,119 @@ send_wechat(
 )
 ```
 
+### 3. get_stock_realtime
+
+获取A股单只股票的实时行情数据。
+
+**参数：**
+
+- `symbol` (str, required): 股票代码，6位数字，如 "000001" 或 "600000"
+
+**返回数据格式：**
+
+```json
+{
+  "success": true,
+  "symbol": "000001",
+  "data": {
+    "代码": "000001",
+    "名称": "平安银行",
+    "最新价": 12.34,
+    "涨跌幅": 1.23,
+    "涨跌额": 0.15,
+    "成交量": 1234567,
+    "成交额": 15234567890,
+    "振幅": 2.5,
+    "最高": 12.5,
+    "最低": 12.2,
+    "今开": 12.25,
+    "昨收": 12.19
+  }
+}
+```
+
+### 4. get_stock_hist
+
+获取A股单只股票的历史行情数据（最近10条记录）。
+
+**参数：**
+
+- `symbol` (str, required): 股票代码，6位数字，如 "000001" 或 "600000"
+- `period` (str, optional): 周期，可选 "daily"(日K), "weekly"(周K), "monthly"(月K)，默认为 "daily"
+- `adjust` (str, optional): 复权类型，可选 ""(不复权), "qfq"(前复权), "hfq"(后复权)，默认为 ""
+
+**返回数据格式：**
+
+```json
+{
+  "success": true,
+  "symbol": "000001",
+  "period": "daily",
+  "adjust": "qfq",
+  "count": 10,
+  "data": [
+    {
+      "日期": "2024-01-15",
+      "开盘": 12.25,
+      "收盘": 12.34,
+      "最高": 12.5,
+      "最低": 12.2,
+      "成交量": 1234567,
+      "成交额": 15234567890
+    }
+  ]
+}
+```
+
+### 5. get_futures_realtime
+
+获取国内期货单只合约的实时行情数据。
+
+**参数：**
+
+- `symbol` (str, required): 期货代码，如 "RB2505" 或 "AG2604"
+
+**返回数据格式：**
+
+```json
+{
+  "success": true,
+  "symbol": "RB2505",
+  "name": "螺纹钢2505",
+  "price": 3850.0,
+  "open": 3840.0,
+  "high": 3860.0,
+  "low": 3835.0,
+  "volume": 123456,
+  "position": 234567,
+  "time": "15:00:00"
+}
+```
+
+### 6. get_futures_main_list
+
+获取国内期货主力合约行情列表（全部数据）。
+
+**参数：** 无
+
+**返回数据格式：**
+
+```json
+{
+  "success": true,
+  "count": 50,
+  "data": [
+    {
+      "代码": "RB2505",
+      "名称": "螺纹钢2505",
+      "最新价": 3850.0,
+      "涨跌": 15.0,
+      "成交量": 123456
+    }
+  ]
+}
+```
+
 ## 📁 项目结构
 
 ```
@@ -151,15 +270,19 @@ mcp/
 │       ├── __init__.py                # Python 包初始化文件
 │       ├── jisilu_mcp_server.py       # 集思录数据抓取模块（QDII + LOF）
 │       ├── wechat_server.py           # 微信通知模块
-│       └── stock_server.py            # A股行情数据模块
+│       ├── stock_server.py            # A股行情数据模块
+│       └── futures_server.py          # 期货行情数据模块
 ├── client/                            # 客户端脚本目录
 │   ├── __init__.py                    # Python 包初始化文件
 │   ├── notify_arbitrage_mcp_client.py # AI Agent 模式客户端
 │   └── deepseek_client.py             # DeepSeek API 客户端
 └── tests/                             # 测试脚本目录
+    ├── __init__.py                    # Python 包初始化文件
     ├── test_mcp_server.py             # MCP 服务器测试脚本
+    ├── test_mcp_server_demo.py        # MCP 服务器演示测试
     ├── test_stock_server.py           # A股行情模块测试脚本
-    └── test_deepseek.py               # DeepSeek 客户端测试脚本
+    ├── test_deepseek.py               # DeepSeek 客户端测试脚本
+    └── test_deepseek_reasoner.py      # DeepSeek Reasoner 测试脚本
 ```
 
 ## 💻 使用示例
@@ -321,7 +444,7 @@ python client/notify_arbitrage_mcp_client.py
 
 ```
 ✅ 已成功建立连接并初始化。
-[可用工具]: ['fetch_qdii_candidates', 'send_wechat', 'get_stock_realtime', 'get_stock_hist']
+[可用工具]: ['fetch_qdii_candidates', 'send_wechat', 'get_stock_realtime', 'get_stock_hist', 'get_futures_realtime', 'get_futures_main_list']
 
 共 7 只基金:
   1. 国投白银LOF (161226)
@@ -399,6 +522,7 @@ def your_tool_name(param1: str, param2: int) -> dict:
 ## 🌟 特性亮点
 
 - ✅ **多数据源**：同时支持 QDII 和 LOF 基金数据
+- ✅ **行情数据**：提供 A股实时/历史行情和期货主力合约数据
 - ✅ **自动切换**：API 失败时自动切换到备用数据源
 - ✅ **生产就绪**：Docker 部署 + 环境变量配置 + 日志管理
 - ✅ **实时通知**：Server 酱微信推送
