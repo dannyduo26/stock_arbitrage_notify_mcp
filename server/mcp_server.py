@@ -17,6 +17,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from modules import jisilu_mcp_server as j
 from modules import wechat_server as w
 from modules import stock_server as s
+from modules import futures_server as f
 
 # 配置日志
 from config.logging_config import setup_logging
@@ -88,6 +89,33 @@ def get_stock_hist(symbol: str, period: str = "daily", adjust: str = "") -> str:
         logger.info(f"成功获取股票 {symbol} 的历史行情数据，返回 {result.get('count', 0)} 条记录")
     else:
         logger.warning(f"获取股票 {symbol} 历史行情失败: {result.get('error', 'unknown')}")
+    return json.dumps(result, ensure_ascii=False)
+
+@mcp.tool(description="获取国内期货单只合约的实时行情数据")
+def get_futures_realtime(symbol: str) -> str:
+    """
+    获取国内期货单只合约的实时行情数据
+
+    Args:
+        symbol: 期货代码，如 "RB2505" 或 "AG2604"
+    """
+    import json
+    logger.info(f"调用 get_futures_realtime, symbol={symbol}")
+    result = f.get_futures_realtime(symbol)
+    if result.get("success"):
+        logger.info(f"成功获取期货 {symbol} 的实时行情数据")
+    else:
+        logger.warning(f"获取期货 {symbol} 实时行情失败: {result.get('error', 'unknown')}")
+    return json.dumps(result, ensure_ascii=False)
+
+@mcp.tool(description="获取国内期货主力合约行情列表")
+def get_futures_main_list() -> str:
+    """
+    获取国内期货主力合约行情列表（前20条）
+    """
+    import json
+    logger.info("调用 get_futures_main_list")
+    result = f.get_futures_main_list()
     return json.dumps(result, ensure_ascii=False)
 
 
